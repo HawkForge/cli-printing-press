@@ -257,6 +257,31 @@ func (s *NPMSource) fetchDownloads(ctx context.Context, packages []npmPackageInf
 		return result
 	}
 
+	// npm's bulk endpoint rejects the whole request with 400 when it contains
+	// a scoped package, so scoped packages are queried one at a time.
+	var unscoped []string
+	for _, name := range names {
+		if strings.HasPrefix(name, "@") {
+			for k, v := range s.fetchDownloadsBatch(ctx, []string{name}) {
+				result[k] = v
+			}
+			continue
+		}
+		unscoped = append(unscoped, name)
+	}
+	for k, v := range s.fetchDownloadsBatch(ctx, unscoped) {
+		result[k] = v
+	}
+	return result
+}
+
+// fetchDownloadsBatch issues one downloads request for the given names.
+func (s *NPMSource) fetchDownloadsBatch(ctx context.Context, names []string) map[string]int {
+	result := make(map[string]int)
+	if len(names) == 0 {
+		return result
+	}
+
 	// npm bulk downloads API: GET /downloads/point/last-week/<pkg1>,<pkg2>,...
 	u := fmt.Sprintf("%s/downloads/point/last-week/%s", s.downloadsBaseURL, strings.Join(names, ","))
 
