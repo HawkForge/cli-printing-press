@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"net/url"
 	"os"
@@ -262,21 +263,17 @@ func (s *NPMSource) fetchDownloads(ctx context.Context, packages []npmPackageInf
 	var unscoped []string
 	for _, name := range names {
 		if strings.HasPrefix(name, "@") {
-			for k, v := range s.fetchDownloadsBatch(ctx, []string{name}) {
-				result[k] = v
-			}
+			maps.Copy(result, s.fetchDownloadsBatch(ctx, []string{name}))
 			continue
 		}
 		unscoped = append(unscoped, name)
 	}
-	for k, v := range s.fetchDownloadsBatch(ctx, unscoped) {
-		result[k] = v
-	}
+	maps.Copy(result, s.fetchDownloadsBatch(ctx, unscoped))
 	return result
 }
 
-// fetchDownloadsBatch only gets unscoped names: the bulk downloads endpoint
-// rejects the whole request when any name in it is scoped.
+// fetchDownloadsBatch accepts an unscoped batch or one scoped package because
+// npm rejects bulk requests that include scoped packages.
 func (s *NPMSource) fetchDownloadsBatch(ctx context.Context, names []string) map[string]int {
 	result := make(map[string]int)
 	if len(names) == 0 {

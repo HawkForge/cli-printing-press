@@ -145,7 +145,7 @@ func usableBaseURLCandidate(candidate string) bool {
 		return false
 	}
 	if ip, err := netip.ParseAddr(host); err == nil {
-		return !(ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsUnspecified())
+		return !ip.IsLoopback() && !ip.IsPrivate() && !ip.IsLinkLocalUnicast() && !ip.IsUnspecified()
 	}
 	return true
 }
