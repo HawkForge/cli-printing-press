@@ -140,7 +140,7 @@ func usableBaseURLCandidate(candidate string) bool {
 	if err != nil || u.Scheme != "https" || u.Hostname() == "" {
 		return false
 	}
-	host := strings.ToLower(u.Hostname())
+	host := strings.TrimSuffix(strings.ToLower(u.Hostname()), ".")
 	if host == "localhost" || strings.HasSuffix(host, ".localhost") {
 		return false
 	}

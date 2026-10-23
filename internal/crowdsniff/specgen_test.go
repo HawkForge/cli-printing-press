@@ -240,6 +240,12 @@ func TestResolveBaseURL(t *testing.T) {
 			want:       "https://api.example.com/v1",
 		},
 		{
+			name:       "skip fully qualified localhost names",
+			explicit:   "",
+			candidates: []string{"https://localhost.", "https://api.localhost.", "https://127.0.0.1.", "https://api.example.com"},
+			want:       "https://api.example.com",
+		},
+		{
 			name:       "empty when only unusable candidates",
 			explicit:   "",
 			candidates: []string{"http://127.0.0.1:${port}"},

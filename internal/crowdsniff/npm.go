@@ -275,7 +275,8 @@ func (s *NPMSource) fetchDownloads(ctx context.Context, packages []npmPackageInf
 	return result
 }
 
-// fetchDownloadsBatch issues one downloads request for the given names.
+// fetchDownloadsBatch only gets unscoped names: the bulk downloads endpoint
+// rejects the whole request when any name in it is scoped.
 func (s *NPMSource) fetchDownloadsBatch(ctx context.Context, names []string) map[string]int {
 	result := make(map[string]int)
 	if len(names) == 0 {
